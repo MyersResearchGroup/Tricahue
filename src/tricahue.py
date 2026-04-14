@@ -124,8 +124,9 @@ class XDC:
         
         self.x2f = X2F(excel_path=self.input_excel_path, 
                        fj_url=self.fj_url, 
-                       fj_user=self.fj_user,
-                       fj_pass=self.fj_pass)
+                       overwrite=self.fj_overwrite)
+                    #    fj_user=self.fj_user,
+                    #    fj_pass=self.fj_pass)
         
         if self.fj_token:
             self.x2f.fj.log_in_token(username=self.fj_user, 
