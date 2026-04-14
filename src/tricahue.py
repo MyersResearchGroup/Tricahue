@@ -124,7 +124,8 @@ class XDC:
         
         self.x2f = X2F(excel_path=self.input_excel_path, 
                        fj_url=self.fj_url, 
-                       overwrite=self.fj_overwrite)
+                       fj_user=self.fj_user,
+                       fj_pass=self.fj_pass)
         
         if self.fj_token:
             self.x2f.fj.log_in_token(username=self.fj_user, 
@@ -610,6 +611,9 @@ class XDE:
 
     def writeToMeasurements(self, XDC_file_name, final_dataframe):
         book = load_workbook(XDC_file_name)
+        if 'Measurement' not in book.sheetnames:
+            book.create_sheet('Measurement')
+            
         sheet = book['Measurement']
 
         # Clear the existing data in the 'Measurement' sheet
