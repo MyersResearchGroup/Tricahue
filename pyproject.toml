@@ -9,7 +9,7 @@ description = "This package extracts experimental data and metadata, converts to
 readme = "README.md"
 dependencies = [
     "excel2flapjack>=1.0.11",
-    "excel2sbol>=1.1.14",
+    "excel2sbol @ git+https://github.com/SynBioDex/Excel-to-SBOL/@fix-no-part-id-and-no-blank-id",
     "numpy==1.26.1",
     "pandas==1.3.3"   
 ]
