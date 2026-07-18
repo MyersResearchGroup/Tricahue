@@ -300,7 +300,7 @@ class XDC:
             uri = binding["s"]["value"]
             subCollection.members = subCollection.members + [ uri ]
         for tl in doc:
-            if isinstance(obj, sbol2.Experiment):
+            if isinstance(tl, sbol2.Experiment):
                 self.experimentId = tl.displayId
             subCollection.members = subCollection.members + [ tl.identity ]
             sbol_id = str(tl).split('/')[-2]
