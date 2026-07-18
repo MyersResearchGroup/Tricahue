@@ -267,7 +267,7 @@ class XDC:
     '''
     Helper function to perform SPARQL queries to fetch URIs from SynBioHub
     '''
-    def sbh_get_subCollection_uris(sbh_url, sbh_token, usergraph, collectionUri, role = None):
+    def sbh_get_subCollection_uris(self, sbh_url, sbh_token, usergraph, collectionUri, role = None):
         if role is None:
             query = f'PREFIX sbol: <http://sbols.org/v2#> SELECT ?s FROM <{usergraph}> WHERE {{ <{collectionUri}> sbol:member ?s }}'
         else:
@@ -293,7 +293,7 @@ class XDC:
         parts = self.sbh_collection_url.split("/")
         usergraph = "/".join(parts[:5])
         subCollection_url = "/".join(parts[:6]) + "/" + self.importType + "/1"
-        search_result = sbh_get_subCollection_uris(self.sbh_url,self.sbh_token,usergraph,subCollection_url)
+        search_result = self.sbh_get_subCollection_uris(self.sbh_url,self.sbh_token,usergraph,subCollection_url)
         for binding in search_result["results"]["bindings"]:
             uri = binding["s"]["value"]
             subCollection.members = subCollection.members + [ uri ]
