@@ -116,6 +116,7 @@ class XDC:
         self.collection_url = None
 
         self.importType = None
+        self.experimentId = None
 
         try:
             self._convert_to_sbol()
@@ -299,6 +300,8 @@ class XDC:
             uri = binding["s"]["value"]
             subCollection.members = subCollection.members + [ uri ]
         for tl in doc:
+            if isinstance(obj, sbol2.Experiment):
+                self.experimentId = tl.displayId
             subCollection.members = subCollection.members + [ tl.identity ]
             sbol_id = str(tl).split('/')[-2]
             if sbol_id in self.sbol_hash_map:
@@ -385,11 +388,15 @@ class XDC:
                     upload_file = {'file': (os.path.basename(file), fobj)}
                     print(self.collection_url)
                     collectionID = self.collection_url.split("/")[-3]
+                    collectionDisplayId = collectionID + "_collection"
                     print(collectionID)
+                    if self.experimentId is not None:
+                        collectionDisplayId = self.experimentId
+                    print(collectionDisplayId)
                     collectionVersion = self.collection_url.split("/")[-1]
                     print(collectionVersion)
                     print(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionID}_collection/{collectionVersion}/attach')
-                    response = requests.post(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionID}_collection/{collectionVersion}/attach', headers=headers, files=upload_file)
+                    response = requests.post(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionDisplayId}/{collectionVersion}/attach', headers=headers, files=upload_file)
                     print("status:", response.status_code)
                     print("headers:", response.headers)
                     print("body:", response.text)
@@ -405,10 +412,14 @@ class XDC:
                 print(self.collection_url)
                 collectionID = self.collection_url.split("/")[-3]
                 print(collectionID)
+                print(collectionID)
+                if self.experimentId is not None:
+                    collectionDisplayId = self.experimentId
+                print(collectionDisplayId)
                 collectionVersion = self.collection_url.split("/")[-1]
                 print(collectionVersion)
                 print(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionID}_collection/{collectionVersion}/attach')
-                response = requests.post(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionID}_collection/{collectionVersion}/attach', headers=headers, files=upload_file)
+                response = requests.post(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionDisplayId}/{collectionVersion}/attach', headers=headers, files=upload_file)
                 print("status:", response.status_code)
                 print("headers:", response.headers)
                 print("body:", response.text)
