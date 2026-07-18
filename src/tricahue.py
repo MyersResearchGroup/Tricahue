@@ -395,7 +395,7 @@ class XDC:
                     print(collectionDisplayId)
                     collectionVersion = self.collection_url.split("/")[-1]
                     print(collectionVersion)
-                    print(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionID}_collection/{collectionVersion}/attach')
+                    print(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionDisplayId}/{collectionVersion}/attach')
                     response = requests.post(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionDisplayId}/{collectionVersion}/attach', headers=headers, files=upload_file)
                     print("status:", response.status_code)
                     print("headers:", response.headers)
@@ -418,7 +418,7 @@ class XDC:
                 print(collectionDisplayId)
                 collectionVersion = self.collection_url.split("/")[-1]
                 print(collectionVersion)
-                print(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionID}_collection/{collectionVersion}/attach')
+                print(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionDisplayId}/{collectionVersion}/attach')
                 response = requests.post(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionDisplayId}/{collectionVersion}/attach', headers=headers, files=upload_file)
                 print("status:", response.status_code)
                 print("headers:", response.headers)
