@@ -263,7 +263,26 @@ class XDC:
         # change to upload_object_in_sheets
         # self.x2f.upload_all() 
         self.x2f.upload_objects_in_sheets()
-
+    
+    '''
+    Helper function to perform SPARQL queries to fetch URIs from SynBioHub
+    '''
+    def sbh_get_subCollection_uris(sbh_url, sbh_token, usergraph, collectionUri, role = None):
+        if role is None:
+            query = f'PREFIX sbol: <http://sbols.org/v2#> SELECT ?s FROM <{usergraph}> WHERE {{ <{collectionUri}> sbol:member ?s }}'
+        else:
+            query = f'PREFIX sbol: <http://sbols.org/v2#> SELECT ?s FROM <{usergraph}> WHERE {{ ?s sbol:role <{role}> . <{collectionUri}> sbol:member ?s }}'
+        url = f"{sbh_url}/sparql?{urlencode({'query': query})}"
+        response =  requests.get(
+            url,
+            headers={
+                'Accept': 'application/json',
+                'X-authorization': sbh_token
+            },
+        )
+        if not response.ok:
+            raise Exception(f"SynBioHub sparql query failed ({response.status_code}): {response.text}")
+        return response.json()
 
     def _upload_to_sbh(self, existing):
         print('uploading to SBH')
@@ -271,6 +290,13 @@ class XDC:
         doc = sbol2.Document()
         doc.read(self.file_path_out)
         subCollection = sbol2.Collection(self.importType)
+        parts = self.sbh_collection_url.split("/")
+        usergraph = "/".join(parts[:5])
+        subCollection_url = "/".join(parts[:6]) + "/" + self.importType + "/1"
+        search_result = sbh_get_subCollection_uris(self.sbh_url,self.sbh_token,usergraph,subCollection_url)
+        for binding in search_result["results"]["bindings"]:
+            uri = binding["s"]["value"]
+            subCollection.members = subCollection.members + [ uri ]
         for tl in doc:
             subCollection.members = subCollection.members + [ tl.identity ]
             sbol_id = str(tl).split('/')[-2]
