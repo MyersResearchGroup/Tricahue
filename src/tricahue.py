@@ -9,6 +9,7 @@ from openpyxl import load_workbook
 import numpy as np
 import re
 import traceback
+from urllib.parse import urlencode
 
 class XDC:
 
