@@ -310,18 +310,11 @@ class XDC:
                         'https://flapjack.rudge-lab.org/ID',
                             '0', '1', [], initial_value=f'https://{self.fj_url}/{self.sbol_hash_map[sbol_id]}'))
         #doc = sbol2.Document()
-        for member_uri in subCollection.members:
-            print(f"Member URI: {member_uri}")
         doc.addCollection(subCollection)
         doc.write(self.file_path_out_FJ)
 
         # SBH file upload
         if (existing):
-            print(f"sbh token: {self.sbh_token}")
-            print(f"root collections: {self.sbh_collection_url}")
-            print(f"sbh url: {self.sbh_url}")
-            print(f"sbh overwrite: {self.sbh_overwrite_num}")
-            print(f"file output: {self.file_path_out_FJ}")
             response =  requests.post(
                 f'{self.sbh_url}/submit',
                 headers={
@@ -336,10 +329,6 @@ class XDC:
                     'overwrite_merge' : self.sbh_overwrite_num
                 },
             )
-            print("status:", response.status_code)
-            print("headers:", response.headers)
-            print("body:", response.text)
-            print("content: ", response.content)
             if not response.ok:
                 raise Exception(f"SynBioHub submit failed ({response.status_code}): {response.text}")
             return self.sbh_collection_url
@@ -368,10 +357,6 @@ class XDC:
                 self.upload_url = None
                 raise AttributeError(f'The collection ({self.sbh_collection_name}) could not be submitted to synbiohub as the collection already exists and overwrite is not on.')
 
-            print("status:", response.status_code)
-            print("headers:", response.headers)
-            print("body:", response.text)
-            print("content: ", response.content)
             if not response.ok:
                 raise Exception(f"SynBioHub submit failed ({response.status_code}): {response.text}")
             return f'{self.sbol_graph_uri}/{self.sbh_collection_name}/{self.sbh_collection_name}_collection/1'
@@ -386,21 +371,12 @@ class XDC:
             if isinstance(file, str):
                 with open(file, 'rb') as fobj:
                     upload_file = {'file': (os.path.basename(file), fobj)}
-                    print(self.collection_url)
                     collectionID = self.collection_url.split("/")[-3]
                     collectionDisplayId = collectionID + "_collection"
-                    print(collectionID)
                     if self.experimentId is not None:
                         collectionDisplayId = self.experimentId
-                    print(collectionDisplayId)
                     collectionVersion = self.collection_url.split("/")[-1]
-                    print(collectionVersion)
-                    print(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionDisplayId}/{collectionVersion}/attach')
                     response = requests.post(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionDisplayId}/{collectionVersion}/attach', headers=headers, files=upload_file)
-                    print("status:", response.status_code)
-                    print("headers:", response.headers)
-                    print("body:", response.text)
-                    print("content: ", response.content)
                     if not response.ok:
                         raise Exception(f"Uploading attachments to SynBioHub failed ({response.status_code}): {response.text}")
                     print(f'Uploaded attachment {upload_file["file"][0]}: {response.status_code}')
@@ -409,21 +385,11 @@ class XDC:
                 filename = getattr(file, 'filename', 'attachment')
                 fobj = getattr(file, 'stream', None) or getattr(file, 'file', None) or file
                 upload_file = {'file': (filename, fobj)}
-                print(self.collection_url)
                 collectionID = self.collection_url.split("/")[-3]
-                print(collectionID)
-                print(collectionID)
                 if self.experimentId is not None:
                     collectionDisplayId = self.experimentId
-                print(collectionDisplayId)
                 collectionVersion = self.collection_url.split("/")[-1]
-                print(collectionVersion)
-                print(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionDisplayId}/{collectionVersion}/attach')
                 response = requests.post(f'{self.sbh_url}/user/{self.sbh_user}/{collectionID}/{collectionDisplayId}/{collectionVersion}/attach', headers=headers, files=upload_file)
-                print("status:", response.status_code)
-                print("headers:", response.headers)
-                print("body:", response.text)
-                print("content: ", response.content)
                 if not response.ok:
                     raise Exception(f"Uploading attachments to SynBioHub failed ({response.status_code}): {response.text}")
                 print(f'Uploaded attachment {upload_file["file"][0]}: {response.status_code}')
