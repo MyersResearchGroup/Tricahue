@@ -270,6 +270,7 @@ class XDC:
     Helper function to perform SPARQL queries to fetch URIs from SynBioHub
     '''
     def sparql_query(self, sbh_url, sbh_token, usergraph, query):
+        print(f"Performing SPARQL query on SynBioHub: {query}")
         url = f"{sbh_url}/sparql?{urlencode({'query': query})}"
         response =  requests.get(
             url,
