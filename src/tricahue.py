@@ -282,14 +282,18 @@ class XDC:
             raise Exception(f"SynBioHub sparql query failed ({response.status_code}): {response.text}")
         return response.json()
     
-    def sbh_get_subCollection_uris(self, sbh_url, sbh_token, usergraph, collectionUri, role = None):
+    def sbh_get_subCollection_uris(self, sbh_url, sbh_token, collectionUri, role = None):
+        parts = self.sbh_collection_url.split("/")
+        usergraph = "/".join(parts[:5])
         if role is None:
             query = f'PREFIX sbol: <http://sbols.org/v2#> SELECT ?s FROM <{usergraph}> WHERE {{ <{collectionUri}> sbol:member ?s }}'
         else:
             query = f'PREFIX sbol: <http://sbols.org/v2#> SELECT ?s FROM <{usergraph}> WHERE {{ ?s sbol:role <{role}> . <{collectionUri}> sbol:member ?s }}'
         return self.sparql_query(sbh_url, sbh_token, usergraph, query)
     
-    def sbh_get_attachment_uri(self, sbh_url, sbh_token, usergraph, collectionUri, attachmentName):
+    def sbh_get_attachment_uri(self, sbh_url, sbh_token, collectionUri, attachmentName):
+        parts = self.sbh_collection_url.split("/")
+        usergraph = "/".join(parts[:5])
         query = f'PREFIX sbol: <http://sbols.org/v2#> PREFIX dcterms: <http://purl.org/dc/terms/> SELECT ?s FROM <{usergraph}> WHERE {{ ?s dcterms:title "{attachmentName}" . <{collectionUri}> sbol:member ?s }}'
         return self.sparql_query(sbh_url, sbh_token, usergraph, query)
 
@@ -300,9 +304,8 @@ class XDC:
         doc.read(self.file_path_out)
         subCollection = sbol2.Collection(self.importType)
         parts = self.sbh_collection_url.split("/")
-        usergraph = "/".join(parts[:5])
         subCollection_url = "/".join(parts[:6]) + "/" + self.importType + "/1"
-        search_result = self.sbh_get_subCollection_uris(self.sbh_url,self.sbh_token,usergraph,subCollection_url)
+        search_result = self.sbh_get_subCollection_uris(self.sbh_url,self.sbh_token,subCollection_url)
         for binding in search_result["results"]["bindings"]:
             uri = binding["s"]["value"]
             subCollection.members = subCollection.members + [ uri ]
@@ -316,7 +319,6 @@ class XDC:
                         sbol2.URIProperty(tl,
                         'https://flapjack.rudge-lab.org/ID',
                             '0', '1', [], initial_value=f'https://{self.fj_url}/{self.sbol_hash_map[sbol_id]}'))
-        #doc = sbol2.Document()
         doc.addCollection(subCollection)
         doc.write(self.file_path_out_FJ)
 
@@ -375,9 +377,14 @@ class XDC:
 
         for location, file in self.attachments.items():
             parts = self.sbh_collection_url.split("/")
-            usergraph = "/".join(parts[:5])
             subCollection_url = "/".join(parts[:6]) + "/" + self.importType + "/1"
-            search_result = self.sbh_get_attachment_uri(self.sbh_url,self.sbh_token,usergraph,subCollection_url, os.path.basename(file))
+            if isinstance(file, str):
+                attachment_name = os.path.basename(file)
+            else:
+                attachment_name = getattr(file, 'filename', None) or getattr(file, 'name', None)
+                if attachment_name is None:
+                    attachment_name = str(file)
+            search_result = self.sbh_get_attachment_uri(self.sbh_url,self.sbh_token,subCollection_url,attachment_name)
             for binding in search_result["results"]["bindings"]:
                 uri = binding["s"]["value"]
                 print(f"Deleting existing attachment {uri}")
