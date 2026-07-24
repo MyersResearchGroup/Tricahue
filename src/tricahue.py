@@ -385,7 +385,7 @@ class XDC:
                 attachment_name = getattr(file, 'filename', None) or getattr(file, 'name', None)
                 if attachment_name is None:
                     attachment_name = str(file)
-            search_result = self.sbh_get_attachment_uri(self.sbh_url,self.sbh_token,subCollection_url,attachment_name)
+            search_result = self.sbh_get_attachment_uri(self.sbh_url,self.sbh_token,self.sbh_collection_url,attachment_name)
             for binding in search_result["results"]["bindings"]:
                 uri = binding["s"]["value"]
                 print(f"Deleting existing attachment {uri}")
