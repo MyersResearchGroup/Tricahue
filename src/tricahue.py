@@ -269,11 +269,7 @@ class XDC:
     '''
     Helper function to perform SPARQL queries to fetch URIs from SynBioHub
     '''
-    def sbh_get_subCollection_uris(self, sbh_url, sbh_token, usergraph, collectionUri, role = None):
-        if role is None:
-            query = f'PREFIX sbol: <http://sbols.org/v2#> SELECT ?s FROM <{usergraph}> WHERE {{ <{collectionUri}> sbol:member ?s }}'
-        else:
-            query = f'PREFIX sbol: <http://sbols.org/v2#> SELECT ?s FROM <{usergraph}> WHERE {{ ?s sbol:role <{role}> . <{collectionUri}> sbol:member ?s }}'
+    def sparql_query(self, sbh_url, sbh_token, usergraph, query):
         url = f"{sbh_url}/sparql?{urlencode({'query': query})}"
         response =  requests.get(
             url,
@@ -285,6 +281,17 @@ class XDC:
         if not response.ok:
             raise Exception(f"SynBioHub sparql query failed ({response.status_code}): {response.text}")
         return response.json()
+    
+    def sbh_get_subCollection_uris(self, sbh_url, sbh_token, usergraph, collectionUri, role = None):
+        if role is None:
+            query = f'PREFIX sbol: <http://sbols.org/v2#> SELECT ?s FROM <{usergraph}> WHERE {{ <{collectionUri}> sbol:member ?s }}'
+        else:
+            query = f'PREFIX sbol: <http://sbols.org/v2#> SELECT ?s FROM <{usergraph}> WHERE {{ ?s sbol:role <{role}> . <{collectionUri}> sbol:member ?s }}'
+        return self.sparql_query(sbh_url, sbh_token, usergraph, query)
+    
+    def sbh_get_attachment_uri(self, sbh_url, sbh_token, usergraph, collectionUri, attachmentName):
+        query = f'PREFIX sbol: <http://sbols.org/v2#> PREFIX dcterms: <http://purl.org/dc/terms/> SELECT ?s FROM <{usergraph}> WHERE {{ ?s dcterms:title "{attachmentName}" . <{collectionUri}> sbol:member ?s }}'
+        return self.sparql_query(sbh_url, sbh_token, usergraph, query)
 
     def _upload_to_sbh(self, existing):
         print('uploading to SBH')
@@ -367,7 +374,16 @@ class XDC:
         self.version = '1'
 
         for location, file in self.attachments.items():
-
+            parts = self.sbh_collection_url.split("/")
+            usergraph = "/".join(parts[:5])
+            subCollection_url = "/".join(parts[:6]) + "/" + self.importType + "/1"
+            search_result = self.sbh_get_attachment_uri(self.sbh_url,self.sbh_token,usergraph,subCollection_url, os.path.basename(file))
+            for binding in search_result["results"]["bindings"]:
+                uri = binding["s"]["value"]
+                print(f"Deleting existing attachment {uri}")
+                response = requests.get(f'{uri}/remove', headers=headers)
+                if not response.ok:
+                    raise Exception(f"Deleting existing attachment failed ({response.status_code}): {response.text}")
             if isinstance(file, str):
                 with open(file, 'rb') as fobj:
                     upload_file = {'file': (os.path.basename(file), fobj)}
